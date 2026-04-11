@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart — Trendify</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/chatbot.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">Trendify</a>
+    <div class="header-actions">
+      <a href="login.html" class="btn btn-outline btn-sm" id="nav-login">Sign In</a>
+      <div class="nav-user-btn" id="nav-user" style="display:none">
+        👤 <span id="nav-user-name">User</span> ▾
+        <div class="nav-dropdown">
+          <a href="orders.html">My Orders</a>
+          <a href="wishlist.html">Wishlist</a>
+          <hr>
+          <a href="admin.html" id="nav-admin" style="display:none">⚙ Admin</a>
+          <button data-logout>Sign Out</button>
+        </div>
+      </div>
+      <a href="cart.html" class="header-icon-btn">🛍<span class="header-badge cart-count">0</span></a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container section">
+    <div style="margin-bottom:40px;">
+      <span class="section-label">Your</span>
+      <h1 style="font-size:2.5rem;">Shopping Cart</h1>
+    </div>
+
+    <div id="cart-login-wall" style="display:none;">
+      <div class="empty-state">
+        <div class="icon">🔒</div>
+        <h3>Sign in to view your cart</h3>
+        <p>You need an account to shop on Trendify</p>
+        <a href="login.html" class="btn btn-gold mt-16">Sign In / Register</a>
+      </div>
+    </div>
+
+    <div id="cart-content" style="display:none;">
+      <div style="display:grid; grid-template-columns:1fr 380px; gap:40px; align-items:start;">
+
+        <!-- Cart Items -->
+        <div>
+          <div id="cart-items-list"></div>
+          <div style="display:flex; justify-content:space-between; margin-top:24px;">
+            <a href="shop.html" class="btn btn-dark">← Continue Shopping</a>
+            <button class="btn btn-outline btn-sm" onclick="clearCart()" style="color:var(--red); border-color:var(--red)">
+              🗑 Clear Cart
+            </button>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary" style="position:sticky; top:100px;">
+          <h3 style="margin-bottom:24px; font-family:var(--font-display);">Order Summary</h3>
+          <div class="summary-row">
+            <span>Subtotal (<span id="item-count">0</span> items)</span>
+            <span id="subtotal">$0.00</span>
+          </div>
+          <div class="summary-row">
+            <span>Shipping</span>
+            <span id="shipping-cost">Free</span>
+          </div>
+          <div class="summary-row">
+            <span>Tax (10%)</span>
+            <span id="tax-amount">$0.00</span>
+          </div>
+          <div class="summary-total">
+            <span>Total</span>
+            <span id="total-amount" style="color:var(--gold);">$0.00</span>
+          </div>
+          <button class="btn btn-gold btn-full" style="margin-top:24px; padding:16px;" onclick="window.location.href='checkout.html'">
+            Proceed to Checkout →
+          </button>
+          <div style="margin-top:16px; text-align:center; font-size:0.75rem; color:var(--text-dim);">
+            🔒 Secure checkout · SSL encrypted
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="cart-empty" style="display:none;">
+      <div class="empty-state">
+        <div class="icon">🛍</div>
+        <h3>Your cart is empty</h3>
+        <p>Looks like you haven't added anything yet</p>
+        <a href="shop.html" class="btn btn-gold mt-16">Start Shopping</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-bottom"><p>© 2024 Trendify. All rights reserved.</p></div>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script>
+async function loadCart() {
+  if (!Auth.isLoggedIn()) {
+    document.getElementById('cart-login-wall').style.display = 'block';
+    return;
+  }
+
+  try {
+    const data = await api.get('/cart');
+
+    if (data.items.length === 0) {
+      document.getElementById('cart-empty').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('cart-content').style.display = 'block';
+    renderCartItems(data.items);
+    updateSummary(data);
+  } catch(e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function renderCartItems(items) {
+  document.getElementById('cart-items-list').innerHTML = items.map(item => `
+    <div class="cart-item" id="item-${item.id}">
+      <img class="cart-item-img"
+           src="${item.image || 'https://via.placeholder.com/72x90?text=P'}"
+           alt="${item.name}"
+           onclick="window.location='product.html?id=${item.product_id}'"
+           style="cursor:pointer">
+      <div class="cart-item-info" style="flex:1;">
+        <h4 class="cart-item-name"
+            onclick="window.location='product.html?id=${item.product_id}'"
+            style="cursor:pointer">${item.name}</h4>
+        <p class="cart-item-cat">${item.category_name || ''}</p>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div class="qty-control">
+            <button class="qty-btn" onclick="updateQty(${item.id}, ${item.quantity - 1})">−</button>
+            <input type="number" class="qty-input" value="${item.quantity}"
+                   onchange="updateQty(${item.id}, parseInt(this.value))"
+                   min="1" max="${item.stock}">
+            <button class="qty-btn" onclick="updateQty(${item.id}, ${item.quantity + 1})">+</button>
+          </div>
+          <span class="cart-item-price">${formatPrice(item.price * item.quantity)}</span>
+          <button class="remove-btn" onclick="removeItem(${item.id})" title="Remove">✕</button>
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-dim); margin-top:4px;">
+          ${formatPrice(item.price)} each
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateSummary(data) {
+  const subtotal = data.total;
+  const shipping = subtotal >= 55 ? 0 : 5.99;
+  const tax = subtotal * 0.1;
+  const total = subtotal + shipping + tax;
+
+  document.getElementById('item-count').textContent = data.count;
+  document.getElementById('subtotal').textContent = formatPrice(subtotal);
+  document.getElementById('shipping-cost').textContent = shipping === 0 ? 'Free' : formatPrice(shipping);
+  document.getElementById('tax-amount').textContent = formatPrice(tax);
+  document.getElementById('total-amount').textContent = formatPrice(total);
+  document.querySelectorAll('.cart-count').forEach(el => el.textContent = data.count);
+
+  // Store total for checkout
+  localStorage.setItem('cart_total', total.toFixed(2));
+}
+
+async function updateQty(itemId, newQty) {
+  if (newQty < 1) { removeItem(itemId); return; }
+  try {
+    await api.put(`/cart/${itemId}`, { quantity: newQty });
+    loadCart();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function removeItem(itemId) {
+  try {
+    await api.delete(`/cart/${itemId}`);
+    showToast('Item removed', 'info');
+    loadCart();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function clearCart() {
+  if (!confirm('Clear all items from cart?')) return;
+  try {
+    await api.delete('/cart');
+    showToast('Cart cleared', 'info');
+    location.reload();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+loadCart();
+</script>
+<script src="assets/js/chatbot.js"></script>
+</body>
+</html>

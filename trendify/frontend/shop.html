@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop — Trendify</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/chatbot.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">Trendify</a>
+    <div class="header-search">
+      <input type="search" id="search-input" placeholder="Search products...">
+      <button class="search-btn-icon" onclick="applyFilters()">🔍</button>
+    </div>
+    <div class="header-actions">
+      <a href="login.html" class="btn btn-outline btn-sm" id="nav-login">Sign In</a>
+      <div class="nav-user-btn" id="nav-user" style="display:none">
+        👤 <span id="nav-user-name">User</span> ▾
+        <div class="nav-dropdown">
+          <a href="orders.html">My Orders</a>
+          <a href="wishlist.html">Wishlist</a>
+          <hr>
+          <a href="admin.html" id="nav-admin" style="display:none">⚙ Admin</a>
+          <button data-logout>Sign Out</button>
+        </div>
+      </div>
+      <a href="cart.html" class="header-icon-btn">🛍<span class="header-badge cart-count">0</span></a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container section">
+    <div class="shop-layout">
+
+      <!-- ── Filters Sidebar ── -->
+      <aside class="filters-panel hide-mobile">
+        <div class="filter-title">Filters</div>
+
+        <div class="filter-group">
+          <h4>Categories</h4>
+          <div id="category-filters"></div>
+        </div>
+
+        <div class="filter-group">
+          <h4>Sort By</h4>
+          <label class="filter-item"><input type="radio" name="sort" value="" checked> Newest</label>
+          <label class="filter-item"><input type="radio" name="sort" value="price_asc"> Price: Low to High</label>
+          <label class="filter-item"><input type="radio" name="sort" value="price_desc"> Price: High to Low</label>
+          <label class="filter-item"><input type="radio" name="sort" value="rating"> Top Rated</label>
+          <label class="filter-item"><input type="radio" name="sort" value="name"> Name A–Z</label>
+        </div>
+
+        <button class="btn btn-outline btn-sm btn-full" onclick="resetFilters()">Clear Filters</button>
+      </aside>
+
+      <!-- ── Product Listing ── -->
+      <div>
+        <div class="sort-bar">
+          <h2 id="page-title" style="font-size:1.5rem">All Products</h2>
+          <div style="display:flex; gap:12px; align-items:center">
+            <span class="result-count" id="result-count">Loading...</span>
+            <select id="mobile-sort" onchange="applyFilters()" class="hide-desktop">
+              <option value="">Newest</option>
+              <option value="price_asc">Price ↑</option>
+              <option value="price_desc">Price ↓</option>
+              <option value="rating">Top Rated</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="products-grid" id="products-container">
+          <!-- Loading skeletons -->
+          ${Array(8).fill('<div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; aspect-ratio:3/4;" class="skeleton"></div>').join('')}
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" style="display:flex; justify-content:center; gap:8px; margin-top:48px;"></div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-bottom">
+    <p>© 2024 Trendify. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+let currentPage = 1;
+let currentCat = params.get('cat') || '';
+let currentSort = params.get('sort') || '';
+let currentSearch = params.get('search') || '';
+
+// Pre-fill search
+if (currentSearch) document.getElementById('search-input').value = currentSearch;
+if (currentSort) {
+  const radio = document.querySelector(`input[value="${currentSort}"]`);
+  if (radio) radio.checked = true;
+}
+
+// Listen for sort radio changes
+document.querySelectorAll('input[name="sort"]').forEach(r => {
+  r.addEventListener('change', applyFilters);
+});
+document.getElementById('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') applyFilters();
+});
+
+async function loadCategories() {
+  const data = await api.get('/products/meta/categories');
+  const container = document.getElementById('category-filters');
+  container.innerHTML = `
+    <label class="filter-item ${!currentCat ? 'active' : ''}">
+      <input type="radio" name="cat" value="" ${!currentCat ? 'checked' : ''}> All
+    </label>
+    ${data.categories.map(c => `
+      <label class="filter-item ${currentCat === c.slug ? 'active' : ''}">
+        <input type="radio" name="cat" value="${c.slug}" ${currentCat === c.slug ? 'checked' : ''}>
+        ${c.icon || ''} ${c.name} <span style="color:var(--text-dim)">(${c.product_count})</span>
+      </label>
+    `).join('')}
+  `;
+  container.querySelectorAll('input[name="cat"]').forEach(r => {
+    r.addEventListener('change', applyFilters);
+  });
+
+  // Update title if category selected
+  if (currentCat) {
+    const cat = data.categories.find(c => c.slug === currentCat);
+    if (cat) document.getElementById('page-title').textContent = cat.name;
+  }
+}
+
+function applyFilters() {
+  currentPage = 1;
+  currentCat = (document.querySelector('input[name="cat"]:checked') || { value: currentCat }).value;
+  currentSort = (document.querySelector('input[name="sort"]:checked') || { value: '' }).value
+    || document.getElementById('mobile-sort').value;
+  currentSearch = document.getElementById('search-input').value.trim();
+  loadProducts();
+}
+
+async function loadProducts() {
+  const container = document.getElementById('products-container');
+  container.innerHTML = Array(8).fill('<div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; aspect-ratio:3/4;" class="skeleton"></div>').join('');
+
+  let url = `/products?page=${currentPage}&limit=12`;
+  if (currentCat) url += `&category=${currentCat}`;
+  if (currentSort) url += `&sort=${currentSort}`;
+  if (currentSearch) url += `&search=${encodeURIComponent(currentSearch)}`;
+
+  try {
+    const data = await api.get(url);
+    document.getElementById('result-count').textContent = `${data.pagination.total} products`;
+
+    if (data.products.length === 0) {
+      container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+        <div class="icon">🔍</div>
+        <h3>No products found</h3>
+        <p>Try adjusting your filters</p>
+      </div>`;
+      return;
+    }
+
+    container.innerHTML = data.products.map(productCardHTML).join('');
+    renderPagination(data.pagination);
+  } catch(e) {
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">⚠</div><h3>Server Error</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function productCardHTML(p) {
+  const discount = p.original_price ? Math.round((1 - p.price / p.original_price) * 100) : null;
+  return `
+    <div class="product-card" onclick="window.location='product.html?id=${p.id}'">
+      <div class="product-img-wrap">
+        <img src="${p.image || 'https://via.placeholder.com/400x500?text=Product'}" alt="${p.name}" loading="lazy">
+        ${p.badge ? `<div class="product-badge"><span class="badge badge-${p.badge_color === 'pink' ? 'red' : p.badge_color === 'black' ? 'dark' : 'green'}">${p.badge}</span></div>` : ''}
+        <div class="product-actions">
+          <button class="product-action-btn" onclick="event.stopPropagation(); addToWishlist(${p.id})" title="Wishlist">♡</button>
+          <button class="product-action-btn" onclick="event.stopPropagation(); addToCart(${p.id})" title="Add to Cart">🛍</button>
+        </div>
+      </div>
+      <div class="product-info">
+        <p class="product-cat">${p.category_name || ''}</p>
+        <h3 class="product-name">${p.name}</h3>
+        <div class="product-rating">${renderStars(p.rating || 0)}<span class="count">(${p.review_count || 0})</span></div>
+        <div class="product-price-row">
+          <span class="product-price">${formatPrice(p.price)}</span>
+          ${p.original_price ? `<span class="product-original">${formatPrice(p.original_price)}</span>` : ''}
+          ${discount ? `<span class="product-discount">-${discount}%</span>` : ''}
+        </div>
+        <button class="product-add-btn" onclick="event.stopPropagation(); addToCart(${p.id})">+ Add to Cart</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderPagination(pag) {
+  const container = document.getElementById('pagination');
+  if (pag.pages <= 1) { container.innerHTML = ''; return; }
+  let html = '';
+  for (let i = 1; i <= pag.pages; i++) {
+    html += `<button class="btn ${i === pag.page ? 'btn-gold' : 'btn-dark'} btn-sm" onclick="goPage(${i})">${i}</button>`;
+  }
+  container.innerHTML = html;
+}
+
+function goPage(n) { currentPage = n; loadProducts(); window.scrollTo({ top: 0 }); }
+function resetFilters() {
+  currentCat = ''; currentSort = ''; currentSearch = '';
+  document.querySelectorAll('input[name="cat"]')[0].checked = true;
+  document.querySelectorAll('input[name="sort"]')[0].checked = true;
+  document.getElementById('search-input').value = '';
+  loadProducts();
+}
+
+async function addToCart(productId) {
+  if (!Auth.isLoggedIn()) { showToast('Please sign in first', 'info'); return; }
+  try {
+    const data = await api.post('/cart/add', { product_id: productId, quantity: 1 });
+    showToast('Added to cart!', 'success');
+    document.querySelectorAll('.cart-count').forEach(el => el.textContent = data.cartCount);
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function addToWishlist(productId) {
+  if (!Auth.isLoggedIn()) { showToast('Please sign in first', 'info'); return; }
+  try {
+    const data = await api.post('/cart/wishlist/add', { product_id: productId });
+    showToast(data.message, 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+loadCategories();
+loadProducts();
+</script>
+<script src="assets/js/chatbot.js"></script>
+</body>
+</html>

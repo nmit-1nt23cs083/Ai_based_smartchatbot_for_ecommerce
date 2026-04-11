@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders — Trendify</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/chatbot.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">Trendify</a>
+    <div class="header-actions">
+      <a href="login.html" class="btn btn-outline btn-sm" id="nav-login">Sign In</a>
+      <div class="nav-user-btn" id="nav-user" style="display:none">
+        👤 <span id="nav-user-name">User</span> ▾
+        <div class="nav-dropdown">
+          <a href="orders.html">My Orders</a>
+          <a href="wishlist.html">Wishlist</a>
+          <hr>
+          <a href="admin.html" id="nav-admin" style="display:none">⚙ Admin</a>
+          <button data-logout>Sign Out</button>
+        </div>
+      </div>
+      <a href="cart.html" class="header-icon-btn">🛍<span class="header-badge cart-count">0</span></a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container section" style="max-width:860px;">
+    <div style="margin-bottom:40px;">
+      <span class="section-label">Account</span>
+      <h1 style="font-size:2.5rem;">My Orders</h1>
+    </div>
+
+    <div id="orders-login-wall" style="display:none;">
+      <div class="empty-state">
+        <div class="icon">🔒</div>
+        <h3>Sign in to view orders</h3>
+        <a href="login.html" class="btn btn-gold mt-16">Sign In</a>
+      </div>
+    </div>
+
+    <div id="orders-list"></div>
+  </div>
+</main>
+
+<!-- Order Detail Modal -->
+<div id="order-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; align-items:center; justify-content:center; padding:24px;">
+  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; max-width:600px; width:100%; max-height:80vh; overflow-y:auto; padding:32px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <h3 id="modal-order-title">Order Details</h3>
+      <button onclick="closeModal()" style="color:var(--text-muted); font-size:1.3rem; background:none; border:none; cursor:pointer;">✕</button>
+    </div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+if (!Auth.isLoggedIn()) {
+  document.getElementById('orders-login-wall').style.display = 'block';
+} else {
+  loadOrders();
+}
+
+const statusColors = {
+  pending: '#c9a96e',
+  processing: '#4a8fd6',
+  shipped: '#9b59b6',
+  delivered: '#4caf82',
+  cancelled: '#d64e4e'
+};
+
+async function loadOrders() {
+  const container = document.getElementById('orders-list');
+  try {
+    const data = await api.get('/orders');
+
+    if (data.orders.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">📦</div>
+          <h3>No orders yet</h3>
+          <p>Start shopping and your orders will appear here</p>
+          <a href="shop.html" class="btn btn-gold mt-16">Shop Now</a>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = data.orders.map(order => `
+      <div class="card" style="margin-bottom:16px; cursor:pointer; transition:border-color 0.2s;"
+           onmouseenter="this.style.borderColor='var(--gold)'"
+           onmouseleave="this.style.borderColor='var(--border)'"
+           onclick="viewOrder(${order.id})">
+        <div class="card-body" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:4px;">
+              ${new Date(order.created_at).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })}
+            </div>
+            <div style="font-weight:600; font-size:1.1rem; font-family:var(--font-display);">Order #${order.id}</div>
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">${order.item_count} item(s)</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:1.2rem; font-weight:700; color:var(--gold);">${formatPrice(order.total)}</div>
+            <span style="
+              display:inline-block; margin-top:6px; padding:3px 12px; border-radius:99px; font-size:0.72rem;
+              font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
+              background:${statusColors[order.status]}22; color:${statusColors[order.status]};
+              border:1px solid ${statusColors[order.status]}44;
+            ">${order.status}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+  } catch(e) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">⚠</div><h3>Error loading orders</h3><p>${e.message}</p></div>`;
+  }
+}
+
+async function viewOrder(id) {
+  const modal = document.getElementById('order-modal');
+  modal.style.display = 'flex';
+  document.getElementById('modal-content').innerHTML = '<div style="text-align:center; padding:40px;"><div class="spinner" style="margin:auto;"></div></div>';
+
+  try {
+    const data = await api.get(`/orders/${id}`);
+    const { order, items } = data;
+
+    document.getElementById('modal-order-title').textContent = `Order #${order.id}`;
+    document.getElementById('modal-content').innerHTML = `
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; font-size:0.85rem; color:var(--text-muted);">
+        <div><strong style="display:block; color:var(--text); margin-bottom:2px;">Date</strong>${new Date(order.created_at).toLocaleDateString()}</div>
+        <div><strong style="display:block; color:var(--text); margin-bottom:2px;">Status</strong>
+          <span style="color:${statusColors[order.status]}; font-weight:600; text-transform:capitalize;">${order.status}</span>
+        </div>
+        <div><strong style="display:block; color:var(--text); margin-bottom:2px;">Ship To</strong>${order.shipping_name}<br>${order.shipping_address}<br>${order.shipping_city}, ${order.shipping_zip}</div>
+        <div><strong style="display:block; color:var(--text); margin-bottom:2px;">Payment</strong>${order.payment_method === 'card' ? '💳 Card' : '💵 Cash on Delivery'}</div>
+      </div>
+      <hr class="divider" style="margin: 16px 0;">
+      ${items.map(item => `
+        <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+          <img src="${item.image || 'https://via.placeholder.com/48'}" style="width:48px;height:60px;object-fit:cover;border-radius:6px;background:var(--bg-subtle);">
+          <div style="flex:1; font-size:0.9rem;">
+            <div style="font-weight:500;">${item.product_name}</div>
+            <div style="color:var(--text-dim); font-size:0.8rem;">Qty: ${item.quantity} × ${formatPrice(item.price)}</div>
+          </div>
+          <span style="font-weight:600;">${formatPrice(item.price * item.quantity)}</span>
+        </div>
+      `).join('')}
+      <hr class="divider" style="margin: 16px 0;">
+      <div style="display:flex; justify-content:space-between; font-size:1.1rem; font-weight:700;">
+        <span>Total</span>
+        <span style="color:var(--gold);">${formatPrice(order.total)}</span>
+      </div>
+    `;
+  } catch(e) {
+    document.getElementById('modal-content').innerHTML = `<p style="color:var(--red);">${e.message}</p>`;
+  }
+}
+
+function closeModal() {
+  document.getElementById('order-modal').style.display = 'none';
+}
+
+document.getElementById('order-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('order-modal')) closeModal();
+});
+</script>
+<script src="assets/js/chatbot.js"></script>
+</body>
+</html>

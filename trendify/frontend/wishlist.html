@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wishlist — Trendify</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/chatbot.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">Trendify</a>
+    <div class="header-actions">
+      <a href="login.html" class="btn btn-outline btn-sm" id="nav-login">Sign In</a>
+      <div class="nav-user-btn" id="nav-user" style="display:none">
+        👤 <span id="nav-user-name">User</span> ▾
+        <div class="nav-dropdown">
+          <a href="orders.html">My Orders</a>
+          <a href="wishlist.html">Wishlist</a>
+          <hr>
+          <a href="admin.html" id="nav-admin" style="display:none">⚙ Admin</a>
+          <button data-logout>Sign Out</button>
+        </div>
+      </div>
+      <a href="cart.html" class="header-icon-btn">🛍<span class="header-badge cart-count">0</span></a>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="container section">
+    <div style="margin-bottom:40px;">
+      <span class="section-label">Saved</span>
+      <h1 style="font-size:2.5rem;">My Wishlist</h1>
+    </div>
+    <div id="wishlist-content"></div>
+  </div>
+</main>
+<script src="assets/js/api.js"></script>
+<script>
+async function loadWishlist() {
+  const container = document.getElementById('wishlist-content');
+  if (!Auth.isLoggedIn()) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">🔒</div><h3>Sign in to view wishlist</h3><a href="login.html" class="btn btn-gold mt-16">Sign In</a></div>`;
+    return;
+  }
+  try {
+    const data = await api.get('/cart/wishlist');
+    if (!data.items.length) {
+      container.innerHTML = `<div class="empty-state"><div class="icon">♡</div><h3>Your wishlist is empty</h3><p>Save items you love for later</p><a href="shop.html" class="btn btn-gold mt-16">Explore Products</a></div>`;
+      return;
+    }
+    container.innerHTML = `<div class="products-grid">${data.items.map(p => `
+      <div class="product-card">
+        <div class="product-img-wrap" onclick="window.location='product.html?id=${p.id}'" style="cursor:pointer;">
+          <img src="${p.image || 'https://via.placeholder.com/400x500'}" alt="${p.name}" loading="lazy">
+        </div>
+        <div class="product-info">
+          <p class="product-cat">${p.category_name || ''}</p>
+          <h3 class="product-name" onclick="window.location='product.html?id=${p.id}'" style="cursor:pointer;">${p.name}</h3>
+          <div class="product-price-row">
+            <span class="product-price">${formatPrice(p.price)}</span>
+            ${p.original_price ? `<span class="product-original">${formatPrice(p.original_price)}</span>` : ''}
+          </div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="product-add-btn" style="flex:1;" onclick="addToCart(${p.id})">+ Add to Cart</button>
+            <button class="btn btn-dark btn-sm btn-icon" onclick="removeFromWishlist(${p.id})" title="Remove">✕</button>
+          </div>
+        </div>
+      </div>
+    `).join('')}</div>`;
+  } catch(e) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">⚠</div><h3>${e.message}</h3></div>`;
+  }
+}
+
+async function addToCart(id) {
+  try {
+    const data = await api.post('/cart/add', { product_id: id, quantity: 1 });
+    showToast('Added to cart!', 'success');
+    document.querySelectorAll('.cart-count').forEach(el => el.textContent = data.cartCount);
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function removeFromWishlist(id) {
+  try {
+    await api.post('/cart/wishlist/add', { product_id: id }); // toggle removes it
+    showToast('Removed from wishlist', 'info');
+    loadWishlist();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+loadWishlist();
+</script>
+<script src="assets/js/chatbot.js"></script>
+</body>
+</html>

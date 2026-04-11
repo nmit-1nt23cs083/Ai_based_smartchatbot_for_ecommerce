@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Trendify</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/admin.css">
+  <link rel="stylesheet" href="assets/css/chatbot.css">
+</head>
+<body>
+
+<div class="admin-layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="admin-sidebar" id="admin-sidebar">
+    <div class="admin-sidebar-header">
+      <div class="logo">Trendify</div>
+      <p>Admin Dashboard</p>
+    </div>
+    <nav class="admin-nav">
+      <div class="admin-nav-section">Main</div>
+      <button class="admin-nav-item active" onclick="showPanel('dashboard', this)">
+        <span class="icon">📊</span> Dashboard
+      </button>
+      <button class="admin-nav-item" onclick="showPanel('products', this)">
+        <span class="icon">🏷</span> Products
+      </button>
+      <button class="admin-nav-item" onclick="showPanel('orders', this)">
+        <span class="icon">📦</span> Orders
+      </button>
+      <button class="admin-nav-item" onclick="showPanel('users', this)">
+        <span class="icon">👥</span> Users
+      </button>
+      <div class="admin-nav-section">Account</div>
+      <a class="admin-nav-item" href="index.html">
+        <span class="icon">🏠</span> View Store
+      </a>
+      <button class="admin-nav-item" data-logout style="color:var(--red);">
+        <span class="icon">🚪</span> Sign Out
+      </button>
+    </nav>
+  </aside>
+
+  <!-- ── Main Content ── -->
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <button class="hide-desktop" onclick="document.getElementById('admin-sidebar').classList.toggle('open')"
+                style="color:var(--text-muted); font-size:1.3rem; background:none; border:none; cursor:pointer;">☰</button>
+        <h2 id="page-title">Dashboard</h2>
+      </div>
+      <div style="font-size:0.85rem; color:var(--text-dim);">
+        Logged in as <span id="admin-name" style="color:var(--gold);">Admin</span>
+      </div>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- ── Dashboard Panel ── -->
+      <div class="admin-panel active" id="panel-dashboard">
+        <div class="stats-grid" id="stats-grid"></div>
+
+        <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:24px;">
+          <!-- Recent Orders -->
+          <div class="data-table-wrap">
+            <div class="data-table-header">
+              <h3>Recent Orders</h3>
+              <button class="btn btn-dark btn-sm" onclick="showPanel('orders', null)">View All →</button>
+            </div>
+            <table class="data-table">
+              <thead><tr>
+                <th>Order</th><th>Customer</th><th>Total</th><th>Status</th>
+              </tr></thead>
+              <tbody id="dash-orders"></tbody>
+            </table>
+          </div>
+
+          <!-- Top Products -->
+          <div class="data-table-wrap">
+            <div class="data-table-header">
+              <h3>Top Sellers</h3>
+            </div>
+            <table class="data-table">
+              <thead><tr><th>Product</th><th>Sold</th><th>Revenue</th></tr></thead>
+              <tbody id="dash-top-products"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Products Panel ── -->
+      <div class="admin-panel" id="panel-products">
+        <div class="data-table-wrap">
+          <div class="data-table-header">
+            <h3>All Products</h3>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <input type="search" class="table-search" id="product-search" placeholder="Search products..." oninput="searchProducts()">
+              <button class="btn btn-gold btn-sm" onclick="openProductModal()">+ Add Product</button>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead><tr>
+              <th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+          <div id="products-pagination" style="display:flex; gap:8px; padding:16px 20px;"></div>
+        </div>
+      </div>
+
+      <!-- ── Orders Panel ── -->
+      <div class="admin-panel" id="panel-orders">
+        <div class="data-table-wrap">
+          <div class="data-table-header">
+            <h3>All Orders</h3>
+            <div style="display:flex; gap:10px;">
+              <select class="table-search" style="width:160px;" id="order-status-filter" onchange="loadOrders()">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead><tr>
+              <th>Order #</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th><th>Action</th>
+            </tr></thead>
+            <tbody id="orders-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Users Panel ── -->
+      <div class="admin-panel" id="panel-users">
+        <div class="data-table-wrap">
+          <div class="data-table-header">
+            <h3>All Users</h3>
+          </div>
+          <table class="data-table">
+            <thead><tr>
+              <th>Name</th><th>Email</th><th>Role</th><th>Orders</th><th>Spent</th><th>Joined</th>
+            </tr></thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Product Modal ── -->
+<div class="admin-modal-bg" id="product-modal" style="display:none;">
+  <div class="admin-modal">
+    <div class="admin-modal-header">
+      <h3 id="product-modal-title">Add Product</h3>
+      <button class="modal-close" onclick="closeProductModal()">✕</button>
+    </div>
+    <form id="product-form" onsubmit="saveProduct(event)">
+      <input type="hidden" id="edit-product-id">
+      <div class="form-group">
+        <label>Product Name *</label>
+        <input type="text" id="p-name" class="form-input" placeholder="e.g. Silk Floral Blouse" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price ($) *</label>
+          <input type="number" id="p-price" class="form-input" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label>Original Price ($)</label>
+          <input type="number" id="p-original-price" class="form-input" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category</label>
+          <select id="p-category" class="form-input"></select>
+        </div>
+        <div class="form-group">
+          <label>Stock</label>
+          <input type="number" id="p-stock" class="form-input" min="0" value="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="p-desc" class="form-input" rows="3" placeholder="Product description..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Badge Text</label>
+          <input type="text" id="p-badge" class="form-input" placeholder="e.g. NEW, SALE, 15%">
+        </div>
+        <div class="form-group">
+          <label>Badge Color</label>
+          <select id="p-badge-color" class="form-input">
+            <option value="green">Green</option>
+            <option value="pink">Pink / Red</option>
+            <option value="black">Dark</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Image URL</label>
+        <input type="url" id="p-image" class="form-input" placeholder="https://...">
+      </div>
+      <div style="display:flex; gap:16px; align-items:center; margin-bottom:24px;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.875rem; color:var(--text-muted);">
+          <input type="checkbox" id="p-featured"> Featured product
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.875rem; color:var(--text-muted);">
+          <input type="checkbox" id="p-active" checked> Active (visible)
+        </label>
+      </div>
+      <div style="display:flex; gap:12px;">
+        <button type="submit" class="btn btn-gold" style="flex:1;">Save Product</button>
+        <button type="button" class="btn btn-dark" onclick="closeProductModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Order Status Modal ── -->
+<div class="admin-modal-bg" id="order-modal" style="display:none;">
+  <div class="admin-modal" style="max-width:400px;">
+    <div class="admin-modal-header">
+      <h3>Update Order Status</h3>
+      <button class="modal-close" onclick="document.getElementById('order-modal').style.display='none'">✕</button>
+    </div>
+    <input type="hidden" id="edit-order-id">
+    <div class="form-group">
+      <label>New Status</label>
+      <select id="order-new-status" class="form-input">
+        <option value="pending">Pending</option>
+        <option value="processing">Processing</option>
+        <option value="shipped">Shipped</option>
+        <option value="delivered">Delivered</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+    <button class="btn btn-gold btn-full" onclick="updateOrderStatus()">Update Status</button>
+  </div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+// Guard: admin only
+document.addEventListener('DOMContentLoaded', () => {
+  if (!Auth.isLoggedIn() || !Auth.isAdmin()) {
+    window.location.href = 'login.html';
+    return;
+  }
+  const user = Auth.getUser();
+  document.getElementById('admin-name').textContent = user.name;
+  loadDashboard();
+  loadCategoriesForForm();
+});
+
+const statusColors = { pending:'#c9a96e', processing:'#4a8fd6', shipped:'#9b59b6', delivered:'#4caf82', cancelled:'#d64e4e' };
+
+function showPanel(name, btn) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(`panel-${name}`).classList.add('active');
+  if (btn) btn.classList.add('active');
+  document.getElementById('page-title').textContent = {
+    dashboard:'Dashboard', products:'Products', orders:'Orders', users:'Users'
+  }[name];
+
+  if (name === 'products') loadProducts();
+  if (name === 'orders') loadOrders();
+  if (name === 'users') loadUsers();
+}
+
+// ── Dashboard ──────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const d = await api.get('/admin/stats');
+
+    document.getElementById('stats-grid').innerHTML = [
+      { label: 'Total Revenue', value: '$' + parseFloat(d.totalRevenue).toFixed(0), icon: '💰', meta: 'All time' },
+      { label: 'Total Orders', value: d.totalOrders, icon: '📦', meta: `${d.pendingOrders} pending` },
+      { label: 'Products', value: d.totalProducts, icon: '🏷', meta: 'Active listings' },
+      { label: 'Customers', value: d.totalUsers, icon: '👥', meta: 'Registered users' },
+    ].map(s => `
+      <div class="stat-card">
+        <div class="icon">${s.icon}</div>
+        <div class="label">${s.label}</div>
+        <div class="value">${s.value}</div>
+        <div class="meta">${s.meta}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('dash-orders').innerHTML = d.recentOrders.map(o => `
+      <tr>
+        <td style="color:var(--gold);">#${o.id}</td>
+        <td>${o.user_name}</td>
+        <td style="color:var(--text);">$${parseFloat(o.total).toFixed(2)}</td>
+        <td><span class="status-badge" style="background:${statusColors[o.status]}22; color:${statusColors[o.status]};">${o.status}</span></td>
+      </tr>
+    `).join('') || '<tr><td colspan="4" class="admin-empty">No orders yet</td></tr>';
+
+    document.getElementById('dash-top-products').innerHTML = d.topProducts.map(p => `
+      <tr>
+        <td style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</td>
+        <td>${p.sold}</td>
+        <td style="color:var(--gold);">$${parseFloat(p.revenue).toFixed(0)}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="3" class="admin-empty">No data</td></tr>';
+  } catch(e) {
+    showToast(e.message, 'error');
+  }
+}
+
+// ── Products ───────────────────────────────────────────────────────────────
+let productPage = 1;
+let productSearch = '';
+let searchTimeout;
+
+function searchProducts() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    productSearch = document.getElementById('product-search').value.trim();
+    productPage = 1;
+    loadProducts();
+  }, 400);
+}
+
+async function loadProducts() {
+  const tbody = document.getElementById('products-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" class="admin-empty">Loading...</td></tr>';
+  try {
+    let url = `/admin/products?page=${productPage}&limit=15`;
+    if (productSearch) url += `&search=${encodeURIComponent(productSearch)}`;
+    const d = await api.get(url);
+
+    tbody.innerHTML = d.products.map(p => `
+      <tr>
+        <td><img class="product-thumb" src="${p.image || 'https://via.placeholder.com/40x50'}" alt="${p.name}"></td>
+        <td style="max-width:200px;">
+          <div style="color:var(--text); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
+          ${p.badge ? `<span class="badge badge-${p.badge_color === 'pink' ? 'red' : p.badge_color === 'black' ? 'dark' : 'green'}" style="margin-top:4px;">${p.badge}</span>` : ''}
+        </td>
+        <td>${p.category_name || '—'}</td>
+        <td style="color:var(--text);">$${parseFloat(p.price).toFixed(2)}</td>
+        <td>
+          <span style="color:${p.stock === 0 ? 'var(--red)' : p.stock < 5 ? 'var(--gold)' : 'var(--green)'};">
+            ${p.stock}
+          </span>
+        </td>
+        <td>
+          <span class="badge ${p.active ? 'badge-green' : 'badge-dark'}">${p.active ? 'Active' : 'Hidden'}</span>
+        </td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-dark btn-sm" onclick="editProduct(${p.id})">Edit</button>
+            <button class="btn btn-sm" style="background:rgba(214,78,78,0.1); color:var(--red); border:1px solid rgba(214,78,78,0.3);" onclick="deleteProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')">Del</button>
+          </div>
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="7" class="admin-empty">No products found</td></tr>';
+
+    // Pagination
+    const pages = d.pages;
+    document.getElementById('products-pagination').innerHTML =
+      pages > 1 ? Array.from({length: pages}, (_, i) => `
+        <button class="btn ${i+1 === productPage ? 'btn-gold' : 'btn-dark'} btn-sm"
+                onclick="productPage=${i+1}; loadProducts();">${i+1}</button>
+      `).join('') : '';
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="admin-empty" style="color:var(--red);">${e.message}</td></tr>`;
+  }
+}
+
+async function loadCategoriesForForm() {
+  try {
+    const d = await api.get('/products/meta/categories');
+    const sel = document.getElementById('p-category');
+    sel.innerHTML = '<option value="">No Category</option>' +
+      d.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  } catch {}
+}
+
+function openProductModal(product = null) {
+  document.getElementById('product-modal').style.display = 'flex';
+  document.getElementById('product-form').reset();
+  document.getElementById('edit-product-id').value = '';
+  document.getElementById('product-modal-title').textContent = 'Add Product';
+  document.getElementById('p-active').checked = true;
+}
+
+async function editProduct(id) {
+  const d = await api.get(`/products/${id}`);
+  const p = d.product;
+  document.getElementById('product-modal').style.display = 'flex';
+  document.getElementById('product-modal-title').textContent = 'Edit Product';
+  document.getElementById('edit-product-id').value = p.id;
+  document.getElementById('p-name').value = p.name;
+  document.getElementById('p-price').value = p.price;
+  document.getElementById('p-original-price').value = p.original_price || '';
+  document.getElementById('p-category').value = p.category_id || '';
+  document.getElementById('p-stock').value = p.stock;
+  document.getElementById('p-desc').value = p.description || '';
+  document.getElementById('p-badge').value = p.badge || '';
+  document.getElementById('p-badge-color').value = p.badge_color || 'green';
+  document.getElementById('p-image').value = p.image || '';
+  document.getElementById('p-featured').checked = !!p.featured;
+  document.getElementById('p-active').checked = !!p.active;
+}
+
+function closeProductModal() {
+  document.getElementById('product-modal').style.display = 'none';
+}
+
+async function saveProduct(e) {
+  e.preventDefault();
+  const id = document.getElementById('edit-product-id').value;
+
+  const body = {
+    name: document.getElementById('p-name').value,
+    price: document.getElementById('p-price').value,
+    original_price: document.getElementById('p-original-price').value || null,
+    category_id: document.getElementById('p-category').value || null,
+    stock: document.getElementById('p-stock').value,
+    description: document.getElementById('p-desc').value,
+    badge: document.getElementById('p-badge').value || null,
+    badge_color: document.getElementById('p-badge-color').value,
+    image: document.getElementById('p-image').value || null,
+    featured: document.getElementById('p-featured').checked ? 1 : 0,
+    active: document.getElementById('p-active').checked ? 1 : 0,
+  };
+
+  try {
+    if (id) {
+      await api.put(`/admin/products/${id}`, body);
+      showToast('Product updated!', 'success');
+    } else {
+      await api.post('/admin/products', body);
+      showToast('Product created!', 'success');
+    }
+    closeProductModal();
+    loadProducts();
+  } catch(err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function deleteProduct(id, name) {
+  if (!confirm(`Delete "${name}"? This will hide it from the store.`)) return;
+  try {
+    await api.delete(`/admin/products/${id}`);
+    showToast('Product deleted', 'info');
+    loadProducts();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+// ── Orders ──────────────────────────────────────────────────────────────────
+async function loadOrders() {
+  const tbody = document.getElementById('orders-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" class="admin-empty">Loading...</td></tr>';
+  const status = document.getElementById('order-status-filter').value;
+  try {
+    const d = await api.get(`/admin/orders?${status ? 'status=' + status : ''}`);
+    tbody.innerHTML = d.orders.map(o => `
+      <tr>
+        <td style="color:var(--gold); font-weight:600;">#${o.id}</td>
+        <td>
+          <div style="color:var(--text);">${o.user_name}</div>
+          <div style="font-size:0.75rem; color:var(--text-dim);">${o.user_email}</div>
+        </td>
+        <td>${o.item_count}</td>
+        <td style="color:var(--text); font-weight:600;">$${parseFloat(o.total).toFixed(2)}</td>
+        <td>
+          <span class="status-badge" style="background:${statusColors[o.status]}22; color:${statusColors[o.status]}; border:1px solid ${statusColors[o.status]}44;">${o.status}</span>
+        </td>
+        <td style="color:var(--text-dim); font-size:0.8rem;">${new Date(o.created_at).toLocaleDateString()}</td>
+        <td>
+          <button class="btn btn-dark btn-sm" onclick="openOrderStatusModal(${o.id}, '${o.status}')">Update</button>
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="7" class="admin-empty">No orders found</td></tr>';
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="admin-empty" style="color:var(--red);">${e.message}</td></tr>`;
+  }
+}
+
+function openOrderStatusModal(id, currentStatus) {
+  document.getElementById('order-modal').style.display = 'flex';
+  document.getElementById('edit-order-id').value = id;
+  document.getElementById('order-new-status').value = currentStatus;
+}
+
+async function updateOrderStatus() {
+  const id = document.getElementById('edit-order-id').value;
+  const status = document.getElementById('order-new-status').value;
+  try {
+    await api.put(`/admin/orders/${id}/status`, { status });
+    showToast('Order status updated!', 'success');
+    document.getElementById('order-modal').style.display = 'none';
+    loadOrders();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+// ── Users ───────────────────────────────────────────────────────────────────
+async function loadUsers() {
+  const tbody = document.getElementById('users-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" class="admin-empty">Loading...</td></tr>';
+  try {
+    const d = await api.get('/admin/users');
+    tbody.innerHTML = d.users.map(u => `
+      <tr>
+        <td style="color:var(--text); font-weight:500;">${u.name}</td>
+        <td>${u.email}</td>
+        <td>
+          <span class="badge ${u.role === 'admin' ? 'badge-gold' : 'badge-dark'}">${u.role}</span>
+        </td>
+        <td>${u.order_count || 0}</td>
+        <td style="color:var(--gold);">$${parseFloat(u.total_spent || 0).toFixed(2)}</td>
+        <td style="color:var(--text-dim); font-size:0.8rem;">${new Date(u.created_at).toLocaleDateString()}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="6" class="admin-empty">No users found</td></tr>';
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" class="admin-empty" style="color:var(--red);">${e.message}</td></tr>`;
+  }
+}
+</script>
+<script src="assets/js/chatbot.js"></script>
+</body>
+</html>

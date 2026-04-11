@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trendify — Luxury Fashion & Lifestyle</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/chatbot.css">
+</head>
+<body>
+
+<!-- ─── Header ─────────────────────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-top-bar">
+    🎉 Free Shipping on orders over ₹4,565 &nbsp;|&nbsp; Use code <strong>TREND20</strong> for 20% off
+  </div>
+  <div class="header-inner">
+    <a href="index.html" class="logo">Trendify</a>
+
+    <div class="header-search">
+      <input type="search" id="search-input" placeholder="Search products..." autocomplete="off">
+      <button class="search-btn-icon" onclick="performSearch()">🔍</button>
+    </div>
+
+    <div class="header-actions">
+      <!-- Login link (shown when logged out) -->
+      <a href="login.html" class="btn btn-outline btn-sm" id="nav-login">Sign In</a>
+
+      <!-- User menu (shown when logged in) -->
+      <div class="nav-user-btn" id="nav-user" style="display:none">
+        👤 <span id="nav-user-name">User</span> ▾
+        <div class="nav-dropdown">
+          <a href="orders.html">My Orders</a>
+          <a href="wishlist.html">Wishlist</a>
+          <a href="notifications.html">🔔 Notification Settings</a>
+          <hr>
+          <a href="admin.html" id="nav-admin" style="display:none">⚙ Admin Panel</a>
+          <button data-logout>Sign Out</button>
+        </div>
+      </div>
+
+      <!-- Wishlist -->
+      <a href="wishlist.html" class="header-icon-btn" title="Wishlist">♡</a>
+
+      <!-- Cart -->
+      <a href="cart.html" class="header-icon-btn" title="Cart">
+        🛍
+        <span class="header-badge cart-count">0</span>
+      </a>
+    </div>
+  </div>
+
+  <nav class="main-nav container">
+    <a href="index.html" class="active">Home</a>
+    <a href="shop.html?cat=clothes">Clothes</a>
+    <a href="shop.html?cat=footwear">Footwear</a>
+    <a href="shop.html?cat=jewelry">Jewelry</a>
+    <a href="shop.html?cat=perfume">Perfume</a>
+    <a href="shop.html?cat=cosmetics">Cosmetics</a>
+    <a href="shop.html?cat=watches">Watches</a>
+    <a href="shop.html">All Products</a>
+  </nav>
+</header>
+
+<!-- ─── Hero Slider ─────────────────────────────────────────────────────── -->
+<section class="hero" id="hero">
+  <div class="hero-slide active" id="slide-0">
+    <img class="hero-bg" src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=1400" alt="Fashion">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <span class="hero-label">Trending Now</span>
+      <h1 class="hero-title">Women's <strong>Latest</strong> Fashion Sale</h1>
+      <p class="hero-price">Starting at <b>₹1,660</b></p>
+      <a href="shop.html?cat=clothes" class="btn btn-gold btn-lg">Shop Collection</a>
+    </div>
+  </div>
+  <div class="hero-slide" id="slide-1">
+    <img class="hero-bg" src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1400" alt="Accessories">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <span class="hero-label">New Arrivals</span>
+      <h1 class="hero-title">Modern <strong>Sunglasses</strong> Collection</h1>
+      <p class="hero-price">Starting at <b>₹1,245</b></p>
+      <a href="shop.html?cat=glasses" class="btn btn-gold btn-lg">Explore Now</a>
+    </div>
+  </div>
+  <div class="hero-slide" id="slide-2">
+    <img class="hero-bg" src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1400" alt="Summer Sale">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <span class="hero-label">Summer Sale</span>
+      <h1 class="hero-title">New Fashion <strong>Summer</strong> Sale</h1>
+      <p class="hero-price">Starting at <b>₹2,489</b></p>
+      <a href="shop.html" class="btn btn-gold btn-lg">Shop All</a>
+    </div>
+  </div>
+  <div class="hero-dots">
+    <button class="hero-dot active" onclick="goToSlide(0)"></button>
+    <button class="hero-dot" onclick="goToSlide(1)"></button>
+    <button class="hero-dot" onclick="goToSlide(2)"></button>
+  </div>
+</section>
+
+<!-- ─── Categories ──────────────────────────────────────────────────────── -->
+<section class="section-sm">
+  <div class="container">
+    <div class="section-header-inline">
+      <div>
+        <span class="section-label">Browse</span>
+        <h2>Shop by Category</h2>
+      </div>
+    </div>
+    <div class="categories-scroll" id="categories-container">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ─── Featured Products ────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="section-header-inline">
+      <div>
+        <span class="section-label">Curated</span>
+        <h2>Featured Products</h2>
+      </div>
+      <a href="shop.html" class="btn btn-outline btn-sm">View All →</a>
+    </div>
+    <div class="products-grid" id="featured-products">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ─── Banner CTA ───────────────────────────────────────────────────────── -->
+<section style="padding: 0 0 80px">
+  <div class="container">
+    <div style="
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 300px;
+    ">
+      <div style="padding: 60px 48px; display: flex; flex-direction: column; justify-content: center;">
+        <span class="section-label">Limited Offer</span>
+        <h2 style="font-size: clamp(1.8rem, 3vw, 2.8rem); margin-bottom: 16px;">Summer Collection <em style="color:var(--gold)">2024</em></h2>
+        <p style="color: var(--text-muted); margin-bottom: 28px;">Get up to 25% off on our exclusive summer pieces. Limited time only.</p>
+        <div>
+          <a href="shop.html" class="btn btn-gold">Shop Now — 25% Off</a>
+        </div>
+      </div>
+      <div style="overflow: hidden; display: flex;">
+        <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600" alt="Summer Collection" style="width:100%; height:100%; object-fit:cover; opacity:0.7;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── New Products ─────────────────────────────────────────────────────── -->
+<section class="section" style="padding-top: 0">
+  <div class="container">
+    <div class="section-header-inline">
+      <div>
+        <span class="section-label">Just In</span>
+        <h2>New Arrivals</h2>
+      </div>
+      <a href="shop.html?sort=newest" class="btn btn-outline btn-sm">See More →</a>
+    </div>
+    <div class="products-grid" id="new-products">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ─── Services ─────────────────────────────────────────────────────────── -->
+<section class="section-sm" style="padding-top: 0">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+      <div class="card card-body" style="display:flex; align-items:center; gap:16px;">
+        <span style="font-size:2rem">🚢</span>
+        <div>
+          <h4 style="margin-bottom:4px">Worldwide Delivery</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted)">Orders over ₹8,300</p>
+        </div>
+      </div>
+      <div class="card card-body" style="display:flex; align-items:center; gap:16px;">
+        <span style="font-size:2rem">⚡</span>
+        <div>
+          <h4 style="margin-bottom:4px">Next Day Delivery</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted)">India Orders Only</p>
+        </div>
+      </div>
+      <div class="card card-body" style="display:flex; align-items:center; gap:16px;">
+        <span style="font-size:2rem">💬</span>
+        <div>
+          <h4 style="margin-bottom:4px">24/7 Support</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted)">We're always here</p>
+        </div>
+      </div>
+      <div class="card card-body" style="display:flex; align-items:center; gap:16px;">
+        <span style="font-size:2rem">↩</span>
+        <div>
+          <h4 style="margin-bottom:4px">Easy Returns</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted)">30-day free returns</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Spin to Win Promo ─────────────────────────────────────────────────── -->
+<section class="section-sm">
+  <div class="container">
+    <div class="spin-to-win-banner">
+      <h3>🎡 Spin the Wheel & Win Discounts!</h3>
+      <p>Try your luck and get up to 20% off your next purchase. One spin per session, valid for 15 minutes!</p>
+      <button class="spin-btn-primary" onclick="openSpinWheel()">Spin to Win</button>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Footer ───────────────────────────────────────────────────────────── -->
+<footer class="site-footer">
+  <div class="footer-main">
+    <div class="footer-brand">
+      <div class="logo">Trendify</div>
+      <p>Your destination for luxury fashion, accessories, and lifestyle products. Quality meets affordability.</p>
+      <div class="footer-socials">
+        <a href="#" class="footer-social-btn">f</a>
+        <a href="#" class="footer-social-btn">t</a>
+        <a href="#" class="footer-social-btn">in</a>
+        <a href="#" class="footer-social-btn">ig</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h5>Categories</h5>
+      <a href="shop.html?cat=clothes">Fashion</a>
+      <a href="shop.html?cat=footwear">Footwear</a>
+      <a href="shop.html?cat=jewelry">Jewelry</a>
+      <a href="shop.html?cat=watches">Watches</a>
+      <a href="shop.html?cat=cosmetics">Cosmetics</a>
+    </div>
+    <div class="footer-col">
+      <h5>Company</h5>
+      <a href="#">About Us</a>
+      <a href="#">Blog</a>
+      <a href="#">Careers</a>
+      <a href="#">Press</a>
+      <a href="#">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h5>Support</h5>
+      <a href="#">Help Center</a>
+      <a href="#">Returns</a>
+      <a href="#">Shipping</a>
+      <a href="#">Terms</a>
+      <a href="privacy-policy.html">Privacy</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Trendify. All rights reserved.</p>
+    <p>Crafted with ♥ for fashion lovers</p>
+  </div>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script>
+// ─── Hero Slider ──────────────────────────────────────────────────────────
+let currentSlide = 0;
+const slides = document.querySelectorAll('.hero-slide');
+const dots = document.querySelectorAll('.hero-dot');
+
+function goToSlide(n) {
+  slides[currentSlide].classList.remove('active');
+  dots[currentSlide].classList.remove('active');
+  currentSlide = n;
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+}
+
+setInterval(() => goToSlide((currentSlide + 1) % slides.length), 5000);
+
+// ─── Search ───────────────────────────────────────────────────────────────
+document.getElementById('search-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') performSearch();
+});
+function performSearch() {
+  const q = document.getElementById('search-input').value.trim();
+  if (q) window.location.href = `shop.html?search=${encodeURIComponent(q)}`;
+}
+
+// ─── Load Categories ──────────────────────────────────────────────────────
+async function loadCategories() {
+  try {
+    const data = await api.get('/products/meta/categories');
+    const container = document.getElementById('categories-container');
+    container.innerHTML = data.categories.map(c => `
+      <a href="shop.html?cat=${c.slug}" class="cat-pill">
+        <span class="icon">${c.icon || '🏷'}</span>
+        ${c.name}
+        <span style="font-size:0.7rem; color:var(--text-dim)">(${c.product_count})</span>
+      </a>
+    `).join('');
+  } catch(e) {
+    document.getElementById('categories-container').innerHTML = '<p style="color:var(--red); font-size:0.875rem">⚠ Could not load categories. Is the server running?</p>';
+  }
+}
+
+// ─── Load Products ────────────────────────────────────────────────────────
+function productCardHTML(p) {
+  const discount = p.original_price
+    ? Math.round((1 - p.price / p.original_price) * 100)
+    : null;
+  return `
+    <div class="product-card" onclick="window.location='product.html?id=${p.id}'">
+      <div class="product-img-wrap">
+        <img src="${p.image || 'https://via.placeholder.com/400x500?text=Product'}"
+             alt="${p.name}" loading="lazy">
+        ${p.badge ? `<div class="product-badge"><span class="badge badge-${p.badge_color === 'pink' ? 'red' : p.badge_color === 'black' ? 'dark' : 'green'}">${p.badge}</span></div>` : ''}
+        <div class="product-actions">
+          <button class="product-action-btn" onclick="event.stopPropagation(); addToWishlist(${p.id})" title="Wishlist">♡</button>
+          <button class="product-action-btn" onclick="event.stopPropagation(); quickAddToCart(${p.id})" title="Add to Cart">🛍</button>
+        </div>
+      </div>
+      <div class="product-info">
+        <p class="product-cat">${p.category_name || ''}</p>
+        <h3 class="product-name">${p.name}</h3>
+        <div class="product-rating">
+          ${renderStars(p.rating || 0)}
+          <span class="count">(${p.review_count || 0})</span>
+        </div>
+        <div class="product-price-row">
+          <span class="product-price">${formatPrice(p.price)}</span>
+          ${p.original_price ? `<span class="product-original">${formatPrice(p.original_price)}</span>` : ''}
+          ${discount ? `<span class="product-discount">-${discount}%</span>` : ''}
+        </div>
+        <button class="product-add-btn" onclick="event.stopPropagation(); quickAddToCart(${p.id})">
+          + Add to Cart
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+async function loadFeatured() {
+  const container = document.getElementById('featured-products');
+  try {
+    const data = await api.get('/products?featured=true&limit=8');
+    container.innerHTML = data.products.map(productCardHTML).join('');
+  } catch(e) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">⚠</div><h3>Server not connected</h3><p>Start the backend with <code>node backend/server.js</code></p></div>`;
+  }
+}
+
+async function loadNew() {
+  try {
+    const data = await api.get('/products?limit=4&sort=newest');
+    document.getElementById('new-products').innerHTML = data.products.map(productCardHTML).join('');
+  } catch {}
+}
+
+async function quickAddToCart(productId) {
+  if (!Auth.isLoggedIn()) {
+    showToast('Please sign in to add items to cart', 'info');
+    setTimeout(() => window.location.href = 'login.html', 1200);
+    return;
+  }
+  try {
+    const data = await api.post('/cart/add', { product_id: productId, quantity: 1 });
+    showToast('Added to cart!', 'success');
+    document.querySelectorAll('.cart-count').forEach(el => el.textContent = data.cartCount);
+  } catch(e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function addToWishlist(productId) {
+  if (!Auth.isLoggedIn()) {
+    showToast('Please sign in to use wishlist', 'info');
+    return;
+  }
+  try {
+    const data = await api.post('/cart/wishlist/add', { product_id: productId });
+    showToast(data.message, 'success');
+  } catch(e) {
+    showToast(e.message, 'error');
+  }
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+loadCategories();
+loadFeatured();
+loadNew();
+</script>
+
+<!-- ─── Spin the Wheel Modal ──────────────────────────────────────────────── -->
+<div class="spin-wheel-modal-overlay" id="spinWheelModal">
+  <div class="spin-wheel-modal">
+    <button onclick="closeSpinWheel()" style="position: absolute; top: 12px; right: 12px; background: none; color: var(--text-muted); font-size: 1.8rem; cursor: pointer;">✕</button>
+    
+    <div class="spin-wheel-content">
+      <div class="spin-wheel-info">
+        <h2>🎡 Spin the Wheel</h2>
+        <p>Try your luck! Tap the golden center button to spin and win amazing discounts, free shipping, or a chance to try again.</p>
+        <div style="margin-top: 24px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid var(--gold);">
+          <p style="margin: 0; color: var(--gold-light);"><strong>⏱️ Time Remaining:</strong></p>
+          <p id="wheelTimer" style="margin: 8px 0 0; font-size: 1.4rem; font-weight: 600; color: var(--gold);">15:00</p>
+        </div>
+      </div>
+      
+      <div class="spin-wheel-container">
+        <div class="spin-wheel-pointer"></div>
+        <div class="spin-wheel" id="wheelRing">
+          <div class="spin-wheel-center">
+            <button id="wheelSpinBtn" onclick="spinTheWheel()" style="width: 100%; height: 100%; cursor: pointer; border: none; background: none; font-size: 0.7rem; font-weight: 700; color: #222; font-family: inherit;">SPIN</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Spin Wheel Result Popup ─────────────────────────────────────────────── -->
+<div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1001; padding: 20px;" id="resultOverlay">
+  <div style="background: linear-gradient(180deg, rgba(20,30,56,0.98), rgba(10,13,28,0.98)); border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); padding: 40px; max-width: 400px; width: 100%; text-align: center;" id="resultPopup">
+    <h3 id="resultTitle" style="font-size: 1.8rem; margin: 0 0 12px; color: var(--gold-light);">You Won!</h3>
+    <p id="resultMessage" style="color: rgba(240,236,228,0.8); margin-bottom: 24px;"></p>
+    <div class="spin-result-popup" style="display: none;" id="winnerSection">
+      <p style="color: var(--text-muted); margin-bottom: 12px;">Use this code at checkout:</p>
+      <div class="spin-result-popup" style="display: block;">
+        <div class="coupon-code" id="resultCode" style="display: inline-block;"></div>
+      </div>
+    </div>
+    <button onclick="closeResultPopup()" style="margin-top: 20px; padding: 10px 24px; background: var(--gold); color: #0f0e0d; border: none; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 0.95rem;">Close</button>
+  </div>
+</div>
+
+<script src="assets/js/chatbot.js"></script>
+
+<!-- ─── Spin to Win JavaScript ────────────────────────────────────────────── -->
+<script>
+  // Spin Wheel Configuration
+  const spinWheelConfig = {
+    rewards: [
+      { label: '5% OFF', code: 'SAVE5', winner: true },
+      { label: '10% OFF', code: 'SAVE10', winner: true },
+      { label: '15% OFF', code: 'LUCKY15', winner: true },
+      { label: '20% OFF', code: 'HOT20', winner: true },
+      { label: 'Free Shipping', code: 'FREESHIP', winner: true },
+      { label: 'Try Again', code: 'TRYAGAIN', winner: false }
+    ],
+    maxRounds: 8,
+    expiryKey: 'trendify_wheel_expiry',
+    usedKey: 'trendify_wheel_used'
+  };
+
+  let wheelIsSpinning = false;
+  let wheelCurrentRotation = 0;
+  let wheelExpiryTime = getOrSetWheelExpiry();
+  let wheelCountdownTimer = null;
+
+  function getOrSetWheelExpiry() {
+    const stored = sessionStorage.getItem(spinWheelConfig.expiryKey);
+    if (stored) {
+      const expiry = new Date(stored);
+      if (!isNaN(expiry.getTime()) && expiry > new Date()) return expiry;
+    }
+    const next = new Date(Date.now() + 15 * 60 * 1000);
+    sessionStorage.setItem(spinWheelConfig.expiryKey, next.toISOString());
+    return next;
+  }
+
+  function openSpinWheel() {
+    document.getElementById('spinWheelModal').classList.add('open');
+    updateWheelTimer();
+    if (!wheelCountdownTimer) {
+      wheelCountdownTimer = setInterval(updateWheelTimer, 1000);
+    }
+  }
+
+  function closeSpinWheel() {
+    document.getElementById('spinWheelModal').classList.remove('open');
+  }
+
+  function updateWheelTimer() {
+    const remaining = wheelExpiryTime - Date.now();
+    const timerEl = document.getElementById('wheelTimer');
+    if (!timerEl) return;
+    
+    if (remaining <= 0) {
+      timerEl.textContent = '00:00';
+      document.getElementById('wheelSpinBtn').disabled = true;
+      clearInterval(wheelCountdownTimer);
+      wheelCountdownTimer = null;
+      return;
+    }
+    
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000).toString().padStart(2, '0');
+    timerEl.textContent = `${mins}:${secs}`;
+  }
+
+  function spinTheWheel() {
+    if (wheelIsSpinning || sessionStorage.getItem(spinWheelConfig.usedKey) === 'true') return;
+    
+    wheelIsSpinning = true;
+    const spinBtn = document.getElementById('wheelSpinBtn');
+    spinBtn.textContent = 'SPINNING...';
+    spinBtn.disabled = true;
+
+    const chosenIndex = Math.floor(Math.random() * spinWheelConfig.rewards.length);
+    const segmentAngle = 360 / spinWheelConfig.rewards.length;
+    const randomOffset = Math.floor(Math.random() * 28) - 14;
+    const targetAngle = spinWheelConfig.maxRounds * 360 + (360 - ((chosenIndex * segmentAngle) + segmentAngle / 2) + randomOffset);
+    wheelCurrentRotation = (wheelCurrentRotation + targetAngle) % 360;
+
+    const wheel = document.getElementById('wheelRing');
+    wheel.style.transform = `rotate(${wheelCurrentRotation}deg)`;
+
+    setTimeout(() => {
+      wheel.style.transition = 'none';
+      const normalized = wheelCurrentRotation % 360;
+      wheel.style.transform = `rotate(${normalized}deg)`;
+      void wheel.offsetWidth;
+      wheel.style.transition = 'transform 4s cubic-bezier(0.33, 1, 0.68, 1)';
+      
+      showSpinResult(spinWheelConfig.rewards[chosenIndex]);
+      sessionStorage.setItem(spinWheelConfig.usedKey, 'true');
+      wheelIsSpinning = false;
+      spinBtn.textContent = 'ALREADY SPUN';
+      spinBtn.disabled = true;
+    }, 4100);
+  }
+
+  function showSpinResult(reward) {
+    const overlay = document.getElementById('resultOverlay');
+    const popup = document.getElementById('resultPopup');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultMessage = document.getElementById('resultMessage');
+    const resultCode = document.getElementById('resultCode');
+    const winnerSection = document.getElementById('winnerSection');
+
+    if (reward.winner) {
+      resultTitle.textContent = '🎉 You Won!';
+      resultTitle.style.color = 'var(--gold-light)';
+      resultMessage.textContent = `Congratulations! You scored ${reward.label}. Use the code below at checkout.`;
+      const coupon = generateCoupon(reward.code);
+      resultCode.textContent = coupon;
+      
+      // Store coupon in sessionStorage for checkout page
+      sessionStorage.setItem('spin_wheel_coupon', coupon);
+      
+      winnerSection.style.display = 'block';
+    } else {
+      resultTitle.textContent = '😊 Almost There!';
+      resultTitle.style.color = '#ff9999';
+      resultMessage.textContent = 'Better luck next time! Come back later to spin again.';
+      winnerSection.style.display = 'none';
+    }
+
+    overlay.style.display = 'flex';
+  }
+
+  function generateCoupon(base) {
+    const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `${base}-${suffix}`;
+  }
+
+  function closeResultPopup() {
+    document.getElementById('resultOverlay').style.display = 'none';
+  }
+
+  // Initialize wheel on page load if needed
+  if (sessionStorage.getItem(spinWheelConfig.usedKey) === 'true') {
+    document.getElementById('wheelSpinBtn').disabled = true;
+    document.getElementById('wheelSpinBtn').textContent = 'ALREADY SPUN';
+  }
+</script>
+
+

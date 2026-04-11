@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Trendify</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/chatbot.css">
+</head>
+<body style="background: radial-gradient(ellipse at 30% 60%, rgba(201,169,110,0.08) 0%, transparent 55%), var(--bg);">
+
+<div class="auth-page">
+  <div class="auth-box">
+    <a href="index.html" class="logo" style="display:block; text-align:center; margin-bottom:8px; font-size:2.2rem;">Trendify</a>
+    <p class="auth-tagline">Your destination for luxury fashion</p>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('register')">Create Account</button>
+    </div>
+
+    <!-- Login Form -->
+    <div class="auth-form active" id="tab-login">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="login-email" class="form-input" placeholder="you@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div style="position:relative;">
+          <input type="password" id="login-password" class="form-input" placeholder="Your password"
+                 autocomplete="current-password" onkeydown="if(event.key==='Enter') loginUser()">
+          <button type="button" onclick="togglePwd('login-password', this)"
+                  style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:1rem;background:none;border:none;cursor:pointer;">👁</button>
+        </div>
+      </div>
+      <div id="login-error" style="display:none; color:var(--red); font-size:0.85rem; margin-bottom:16px; padding:10px 14px; background:rgba(214,78,78,0.1); border-radius:6px;"></div>
+      <button class="btn btn-gold btn-full" style="padding:14px;" onclick="loginUser()">Sign In</button>
+    </div>
+
+    <!-- Register Form -->
+    <div class="auth-form" id="tab-register">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" class="form-input" placeholder="Jane Doe" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="reg-email" class="form-input" placeholder="you@email.com" autocomplete="email">
+      </div>
+
+      <!-- Phone Number with Country Code -->
+      <div class="form-group">
+        <label>Phone Number (Optional)</label>
+        <div style="display:flex; gap:8px;">
+          <select id="reg-country-code" class="form-input" style="flex: 0.8; padding:10px;">
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+91">🇮🇳 +91</option>
+            <option value="+86">🇨🇳 +86</option>
+            <option value="+81">🇯🇵 +81</option>
+            <option value="+33">🇫🇷 +33</option>
+            <option value="+49">🇩🇪 +49</option>
+            <option value="+39">🇮🇹 +39</option>
+            <option value="+34">🇪🇸 +34</option>
+            <option value="+61">🇦🇺 +61</option>
+            <option value="+27">🇿🇦 +27</option>
+            <option value="+55">🇧🇷 +55</option>
+            <option value="+234">🇳🇬 +234</option>
+            <option value="+20">🇪🇬 +20</option>
+            <option value="+971">🇦🇪 +971</option>
+            <option value="+966">🇸🇦 +966</option>
+            <option value="+60">🇲🇾 +60</option>
+            <option value="+65">🇸🇬 +65</option>
+            <option value="+62">🇮🇩 +62</option>
+            <option value="+63">🇵🇭 +63</option>
+          </select>
+          <input type="tel" id="reg-phone" class="form-input" placeholder="10 digit number" style="flex: 1;">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Password <span style="color:var(--text-dim); font-weight:300;">(min. 6 characters)</span></label>
+        <div style="position:relative;">
+          <input type="password" id="reg-password" class="form-input" placeholder="Choose a strong password"
+                 autocomplete="new-password" onkeydown="if(event.key==='Enter') registerUser()">
+          <button type="button" onclick="togglePwd('reg-password', this)"
+                  style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:1rem;background:none;border:none;cursor:pointer;">👁</button>
+        </div>
+      </div>
+
+      <!-- WhatsApp Consent Checkbox -->
+      <div class="form-group" style="margin-bottom:20px;">
+        <!-- Email Notifications -->
+        <div style="background:rgba(201,169,110,0.05); border:1px solid rgba(201,169,110,0.2); border-radius:8px; padding:14px; margin-bottom:12px;">
+          <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;">
+            <input type="checkbox" id="reg-email-notifications" checked style="margin-top:2px; cursor:pointer; width:18px; height:18px; accent-color:var(--gold);">
+            <label for="reg-email-notifications" style="cursor:pointer; flex:1;">
+              <strong>📧 Email Notifications</strong>
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-top:6px; line-height:1.5;">
+                ✓ Order confirmations <br>
+                ✓ Shipping updates <br>
+                ✓ Exclusive offers & deals
+              </p>
+            </label>
+          </div>
+        </div>
+
+        <!-- WhatsApp Updates -->
+        <div style="background:rgba(201,169,110,0.05); border:1px solid rgba(201,169,110,0.2); border-radius:8px; padding:14px; margin-bottom:12px;">
+          <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;">
+            <input type="checkbox" id="reg-whatsapp-consent" style="margin-top:2px; cursor:pointer; width:18px; height:18px; accent-color:var(--gold);">
+            <label for="reg-whatsapp-consent" style="cursor:pointer; flex:1;">
+              <strong>💬 WhatsApp Updates</strong>
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-top:6px; line-height:1.5;">
+                ✓ Real-time order updates <br>
+                ✓ Delivery tracking <br>
+                ✓ Customer support
+              </p>
+            </label>
+          </div>
+        </div>
+
+        <!-- Telegram Updates -->
+        <div style="background:rgba(201,169,110,0.05); border:1px solid rgba(201,169,110,0.2); border-radius:8px; padding:14px; margin-bottom:16px;">
+          <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;">
+            <input type="checkbox" id="reg-telegram-consent" style="margin-top:2px; cursor:pointer; width:18px; height:18px; accent-color:var(--gold);">
+            <label for="reg-telegram-consent" style="cursor:pointer; flex:1;">
+              <strong>✈️ Telegram Updates (Optional)</strong>
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-top:6px; line-height:1.5;">
+                ✓ Early access to new collections <br>
+                ✓ Flash sales & special offers
+              </p>
+            </label>
+          </div>
+        </div>
+
+        <!-- Privacy Policy -->
+        <div style="background:linear-gradient(135deg, rgba(201,169,110,0.08), rgba(226,196,138,0.05)); border:1px solid rgba(201,169,110,0.3); border-radius:8px; padding:14px; margin-bottom:12px;">
+          <p style="font-size:0.85rem; color:var(--text); line-height:1.6; margin:0;">
+            <strong>🔒 Data Privacy:</strong><br>
+            We collect your data only to provide services. We do not share your personal information with third parties. You can manage or opt out of notifications anytime from your account settings.
+          </p>
+          <div style="margin-top:8px; display:flex; gap:12px;">
+            <button type="button" onclick="showPrivacyPolicy()" style="background:none; border:none; color:var(--gold); text-decoration:underline; cursor:pointer; font-size:0.8rem; padding:0; flex:1; text-align:left;">📋 Quick Summary</button>
+            <a href="privacy-policy.html" target="_blank" style="background:none; border:none; color:var(--gold); text-decoration:underline; cursor:pointer; font-size:0.8rem; padding:0; flex:1; text-align:right;">Read Full Policy →</a>
+          </div>
+        </div>
+
+        <!-- Terms Acceptance -->
+        <div style="display:flex; align-items:flex-start; gap:10px;">
+          <input type="checkbox" id="reg-accept-terms" style="margin-top:2px; cursor:pointer; width:18px; height:18px; accent-color:var(--gold);">
+          <label for="reg-accept-terms" style="cursor:pointer; flex:1; font-size:0.8rem; color:var(--text-muted);">
+            I agree to the Privacy Policy and Terms of Service
+          </label>
+        </div>
+      </div>
+
+      <div id="reg-error" style="display:none; color:var(--red); font-size:0.85rem; margin-bottom:16px; padding:10px 14px; background:rgba(214,78,78,0.1); border-radius:6px;"></div>
+      <button class="btn btn-gold btn-full" style="padding:14px;" onclick="registerUser()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+// Redirect if already logged in
+if (Auth.isLoggedIn()) {
+  window.location.href = 'index.html';
+}
+
+// Check if register tab should be shown
+if (new URLSearchParams(window.location.search).get('tab') === 'register') {
+  switchTab('register');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+  });
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+}
+
+function togglePwd(id, btn) {
+  const input = document.getElementById(id);
+  input.type = input.type === 'password' ? 'text' : 'password';
+  btn.style.opacity = input.type === 'text' ? '1' : '0.5';
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideError(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+async function loginUser() {
+  hideError('login-error');
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  if (!email || !password) { showError('login-error', 'Please enter email and password'); return; }
+
+  try {
+    const data = await api.post('/auth/login', { email, password });
+    Auth.setToken(data.token);
+    Auth.setUser(data.user);
+    showToast('Welcome back, ' + data.user.name.split(' ')[0] + '!', 'success');
+    const redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+    setTimeout(() => window.location.href = redirect, 800);
+  } catch(e) {
+    showError('login-error', e.message);
+  }
+}
+
+async function registerUser() {
+  hideError('reg-error');
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const phone = document.getElementById('reg-phone')?.value.trim() || null;
+  const countryCode = document.getElementById('reg-country-code')?.value || null;
+  const emailNotifications = document.getElementById('reg-email-notifications')?.checked ?? true;
+  const whatsappConsent = document.getElementById('reg-whatsapp-consent')?.checked || false;
+  const telegramConsent = document.getElementById('reg-telegram-consent')?.checked || false;
+  const acceptTerms = document.getElementById('reg-accept-terms')?.checked || false;
+
+  if (!name || !email || !password) { showError('reg-error', 'All fields are required'); return; }
+  if (name.length < 2) { showError('reg-error', 'Name must be at least 2 characters'); return; }
+  if (password.length < 6) { showError('reg-error', 'Password must be at least 6 characters'); return; }
+  if (phone && phone.length < 7) { showError('reg-error', 'Phone number must be at least 7 digits'); return; }
+  if (!acceptTerms) { showError('reg-error', 'You must agree to the Privacy Policy'); return; }
+
+  try {
+    const data = await api.post('/auth/register', { 
+      name, email, password, phone, countryCode, 
+      emailNotifications, whatsappConsent, telegramConsent 
+    });
+    Auth.setToken(data.token);
+    Auth.setUser(data.user);
+    showToast('Account created! Welcome, ' + data.user.name.split(' ')[0] + '!', 'success');
+    setTimeout(() => window.location.href = 'index.html', 800);
+  } catch(e) {
+    showError('reg-error', e.message);
+  }
+}
+
+function showPrivacyPolicy() {
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+    z-index: 10000; padding: 20px;
+  `;
+  
+  modal.innerHTML = `
+    <div style="background: var(--bg-card); color: var(--text); border: 1px solid var(--border); border-radius: 12px; max-width: 600px; max-height: 80vh; overflow-y: auto; padding: 30px; position: relative;">
+      <button onclick="this.closest('div').parentElement.remove()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--gold); font-size: 24px; cursor: pointer;">✕</button>
+      <h2 style="color: var(--gold); margin-bottom: 20px;">Privacy Policy & Data Protection</h2>
+      <div style="font-size: 0.9rem; line-height: 1.8; color: var(--text-muted);">
+        <h4 style="color: var(--gold); margin-top: 15px; margin-bottom: 8px;">🔒 Data Collection</h4>
+        <p>We collect: name, email, phone (optional), and browsing history to provide our services.</p>
+        
+        <h4 style="color: var(--gold); margin-top: 15px; margin-bottom: 8px;">📧 Email Notifications</h4>
+        <p>You can toggle email notifications on/off anytime. Default is enabled for order updates.</p>
+        
+        <h4 style="color: var(--gold); margin-top: 15px; margin-bottom: 8px;">🚫 No Data Sharing</h4>
+        <p>We do NOT sell, rent, or share your personal data with anyone. Your privacy is our priority.</p>
+        
+        <h4 style="color: var(--gold); margin-top: 15px; margin-bottom: 8px;">🔐 Unsubscribe Anytime</h4>
+        <p>You can unsubscribe from notifications anytime through your account settings or by clicking unsubscribe links in our emails.</p>
+        
+        <h4 style="color: var(--gold); margin-top: 15px; margin-bottom: 8px;">⚡ Data Security</h4>
+        <p>All data is encrypted. Passwords are never stored in plain text.</p>
+      </div>
+      <button onclick="this.closest('div').parentElement.remove()" style="background: var(--gold); color: var(--bg); border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold;">I Understand</button>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+}
+</script>
+<script src="assets/js/chatbot.js"></script>
+</body>
+</html>

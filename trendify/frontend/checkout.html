@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — Trendify</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/chatbot.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">Trendify</a>
+    <div style="font-size:0.85rem; color:var(--text-muted); display:flex; align-items:center; gap:8px;">
+      🔒 Secure Checkout
+    </div>
+    <a href="cart.html" class="btn btn-dark btn-sm">← Back to Cart</a>
+  </div>
+</header>
+
+<main>
+  <div class="container section" style="max-width:960px;">
+    <div style="margin-bottom:40px;">
+      <span class="section-label">Final Step</span>
+      <h1 style="font-size:2.5rem;">Checkout</h1>
+    </div>
+
+    <div id="checkout-login-wall" style="display:none;">
+      <div class="empty-state">
+        <div class="icon">🔒</div>
+        <h3>Sign in to checkout</h3>
+        <a href="login.html" class="btn btn-gold mt-16">Sign In</a>
+      </div>
+    </div>
+
+    <div id="checkout-content" style="display:none;">
+      <div style="display:grid; grid-template-columns:1fr 360px; gap:40px; align-items:start;">
+
+        <!-- Checkout Form -->
+        <div>
+          <!-- Shipping Info -->
+          <div class="card" style="margin-bottom:24px;">
+            <div class="card-body">
+              <h3 style="margin-bottom:24px; display:flex; align-items:center; gap:12px;">
+                <span style="width:28px;height:28px;border-radius:50%;background:var(--gold);color:var(--bg);font-size:0.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;">1</span>
+                Shipping Information
+              </h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Full Name *</label>
+                  <input type="text" id="ship-name" class="form-input" placeholder="Jane Doe" required>
+                </div>
+                <div class="form-group">
+                  <label>Email Address *</label>
+                  <input type="email" id="ship-email" class="form-input" placeholder="jane@email.com" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Street Address *</label>
+                <input type="text" id="ship-address" class="form-input" placeholder="123 Main Street, Apt 4B" required>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>City *</label>
+                  <input type="text" id="ship-city" class="form-input" placeholder="Bengaluru" required>
+                </div>
+                <div class="form-group">
+                  <label>ZIP / Postal Code *</label>
+                  <input type="text" id="ship-zip" class="form-input" placeholder="10001" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment -->
+          <div class="card" style="margin-bottom:24px;">
+            <div class="card-body">
+              <h3 style="margin-bottom:24px; display:flex; align-items:center; gap:12px;">
+                <span style="width:28px;height:28px;border-radius:50%;background:var(--gold);color:var(--bg);font-size:0.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;">2</span>
+                Payment Method
+              </h3>
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <label style="display:flex; align-items:center; gap:12px; padding:16px; border:1px solid var(--border); border-radius:8px; cursor:pointer; transition:border-color 0.2s;" id="pay-card-label">
+                  <input type="radio" name="payment" value="card" checked onchange="selectPayment('card')">
+                  <div>
+                    <div style="font-weight:500; margin-bottom:2px;">💳 Credit / Debit Card</div>
+                    <div style="font-size:0.78rem; color:var(--text-dim);">Visa, Mastercard, Amex</div>
+                  </div>
+                </label>
+
+                <div id="card-fields" style="padding:16px; background:var(--bg-subtle); border-radius:8px; border:1px solid var(--border);">
+                  <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19"
+                           oninput="this.value=this.value.replace(/\D/g,'').replace(/(\d{4})/g,'$1 ').trim()">
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Expiry (MM/YY)</label>
+                      <input type="text" class="form-input" placeholder="12/28" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                      <label>CVV</label>
+                      <input type="text" class="form-input" placeholder="123" maxlength="4">
+                    </div>
+                  </div>
+                  <div class="form-group" style="margin-bottom:0">
+                    <label>Cardholder Name</label>
+                    <input type="text" class="form-input" placeholder="Jane Doe">
+                  </div>
+                </div>
+
+                <label style="display:flex; align-items:center; gap:12px; padding:16px; border:1px solid var(--border); border-radius:8px; cursor:pointer;" id="pay-cod-label">
+                  <input type="radio" name="payment" value="cod" onchange="selectPayment('cod')">
+                  <div>
+                    <div style="font-weight:500; margin-bottom:2px;">💵 Cash on Delivery</div>
+                    <div style="font-size:0.78rem; color:var(--text-dim);">Pay when your order arrives</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-gold btn-full btn-lg" onclick="placeOrder()" id="place-order-btn">
+            Place Order →
+          </button>
+          <p style="text-align:center; margin-top:12px; font-size:0.78rem; color:var(--text-dim);">
+            By placing order you agree to our Terms of Service
+          </p>
+        </div>
+
+        <!-- Order Summary Sidebar -->
+        <div>
+          <div class="order-summary" style="position:sticky; top:100px;">
+            <h3 style="margin-bottom:20px; font-family:var(--font-display);">Order Summary</h3>
+            <div id="checkout-items" style="margin-bottom:16px; border-bottom:1px solid var(--border); padding-bottom:16px;"></div>
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span id="co-subtotal">—</span>
+            </div>
+            <div class="summary-row">
+              <span>Shipping</span>
+              <span id="co-shipping">—</span>
+            </div>
+            <div class="summary-row">
+              <span>Tax (10%)</span>
+              <span id="co-tax">—</span>
+            </div>
+            
+            <!-- Coupon Section -->
+            <div style="margin:20px 0; padding:16px; background:var(--bg-subtle); border-radius:8px; border:1px solid var(--border);">
+              <label style="display:block; font-size:0.8rem; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Discount Code</label>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="coupon-code" placeholder="Enter coupon..." class="form-input" style="flex:1; margin-bottom:0; padding:10px 12px; font-size:0.85rem;">
+                <button onclick="applyCoupon()" style="padding:10px 16px; background:var(--gold); color:var(--bg); border:none; border-radius:8px; font-weight:600; font-size:0.85rem; cursor:pointer; transition:all 0.25s;">Apply</button>
+              </div>
+              <div id="coupon-msg" style="margin-top:8px; font-size:0.75rem; text-align:center;"></div>
+            </div>
+            
+            <div class="summary-row" id="co-discount-row" style="display:none; color:var(--green);">
+              <span>Discount</span>
+              <span id="co-discount">—</span>
+            </div>
+            
+            <div class="summary-total">
+              <span>Total</span>
+              <span id="co-total" style="color:var(--gold);">—</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Success State -->
+    <div id="order-success" style="display:none; text-align:center; padding:80px 24px;">
+      <div style="font-size:4rem; margin-bottom:24px;">🎉</div>
+      <h2 style="margin-bottom:12px;">Order Placed Successfully!</h2>
+      <p style="color:var(--text-muted); margin-bottom:8px;">Your order <strong id="order-id-display" style="color:var(--gold);">#000</strong> has been confirmed.</p>
+      <p style="color:var(--text-muted); margin-bottom:32px;">You'll receive a confirmation email shortly.</p>
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <a href="orders.html" class="btn btn-gold">View My Orders</a>
+        <a href="shop.html" class="btn btn-dark">Continue Shopping</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="assets/js/api.js"></script>
+<script>
+if (!Auth.isLoggedIn()) {
+  document.getElementById('checkout-login-wall').style.display = 'block';
+} else {
+  document.getElementById('checkout-content').style.display = 'block';
+  loadCheckout();
+}
+
+// Coupon state
+let currentDiscount = 0;
+let appliedCouponCode = '';
+
+// Pre-fill user info
+const user = Auth.getUser();
+if (user) {
+  document.getElementById('ship-name').value = user.name || '';
+  document.getElementById('ship-email').value = user.email || '';
+}
+
+// Check for coupon in session storage (from spin-wheel)
+const spinCoupon = sessionStorage.getItem('spin_wheel_coupon');
+if (spinCoupon) {
+  document.getElementById('coupon-code').value = spinCoupon;
+}
+
+async function loadCheckout() {
+  try {
+    const data = await api.get('/cart');
+    if (data.items.length === 0) {
+      window.location.href = 'cart.html';
+      return;
+    }
+
+    // Render items
+    document.getElementById('checkout-items').innerHTML = data.items.map(item => `
+      <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+        <img src="${item.image || 'https://via.placeholder.com/48'}"
+             style="width:48px;height:60px;object-fit:cover;border-radius:6px;">
+        <div style="flex:1; min-width:0;">
+          <p style="font-size:0.85rem; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</p>
+          <p style="font-size:0.75rem; color:var(--text-dim);">Qty: ${item.quantity}</p>
+        </div>
+        <span style="font-size:0.9rem; font-weight:600;">${formatPrice(item.price * item.quantity)}</span>
+      </div>
+    `).join('');
+
+    updateOrderTotal(data.total);
+  } catch(e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function updateOrderTotal(subtotal) {
+  const shipping = subtotal >= 55 ? 0 : 5.99;
+  const discount = subtotal * (currentDiscount / 100);
+  const subtotalAfterDiscount = subtotal - discount;
+  const tax = subtotalAfterDiscount * 0.1;
+  const total = subtotalAfterDiscount + shipping + tax;
+
+  document.getElementById('co-subtotal').textContent = formatPrice(subtotal);
+  document.getElementById('co-shipping').textContent = shipping === 0 ? 'Free' : formatPrice(shipping);
+  document.getElementById('co-tax').textContent = formatPrice(tax);
+  
+  if (currentDiscount > 0) {
+    document.getElementById('co-discount-row').style.display = 'flex';
+    document.getElementById('co-discount').textContent = `-${formatPrice(discount)}`;
+  } else {
+    document.getElementById('co-discount-row').style.display = 'none';
+  }
+  
+  document.getElementById('co-total').textContent = formatPrice(total);
+  
+  // Store for later
+  window.checkoutTotal = total;
+  window.checkoutSubtotal = subtotal;
+  window.checkoutDiscount = currentDiscount;
+}
+
+async function applyCoupon() {
+  const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+  const msgEl = document.getElementById('coupon-msg');
+  
+  if (!code) {
+    msgEl.textContent = '';
+    return;
+  }
+  
+  try {
+    // Call backend to validate coupon
+    const response = await fetch('/api/coupons/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    });
+    
+    if (!response.ok) {
+      msgEl.style.color = 'var(--red)';
+      msgEl.textContent = '❌ Invalid coupon code';
+      msgEl.style.display = 'block';
+      return;
+    }
+    
+    const data = await response.json();
+    currentDiscount = data.discountPercent || 0;
+    appliedCouponCode = code;
+    
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = `✓ ${data.discountPercent}% discount applied!`;
+    msgEl.style.display = 'block';
+    
+    // Reload checkout to show new total
+    const cartData = await api.get('/cart');
+    updateOrderTotal(cartData.total);
+  } catch(e) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = '❌ Error validating coupon';
+    msgEl.style.display = 'block';
+  }
+}
+
+function selectPayment(method) {
+  document.getElementById('card-fields').style.display = method === 'card' ? 'block' : 'none';
+}
+
+async function placeOrder() {
+  const name = document.getElementById('ship-name').value.trim();
+  const email = document.getElementById('ship-email').value.trim();
+  const address = document.getElementById('ship-address').value.trim();
+  const city = document.getElementById('ship-city').value.trim();
+  const zip = document.getElementById('ship-zip').value.trim();
+  const payment = document.querySelector('input[name="payment"]:checked').value;
+
+  if (!name || !email || !address || !city || !zip) {
+    showToast('Please fill in all shipping fields', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('place-order-btn');
+  btn.disabled = true;
+  btn.textContent = 'Placing Order...';
+
+  try {
+    const data = await api.post('/orders/checkout', {
+      shipping_name: name, shipping_email: email,
+      shipping_address: address, shipping_city: city,
+      shipping_zip: zip, payment_method: payment,
+      coupon_code: appliedCouponCode,
+      discount_percent: currentDiscount
+    });
+
+    document.getElementById('checkout-content').style.display = 'none';
+    document.getElementById('order-success').style.display = 'block';
+    document.getElementById('order-id-display').textContent = `#${data.orderId}`;
+    document.querySelectorAll('.cart-count').forEach(el => el.textContent = '0');
+    
+    // Clear spin-wheel coupon from session
+    sessionStorage.removeItem('spin_wheel_coupon');
+  } catch(e) {
+    showToast(e.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Place Order →';
+  }
+}
+</script>
+<script src="assets/js/chatbot.js"></script>
+</body>
+</html>
