@@ -442,7 +442,9 @@ MIT License - See LICENSE file for details
 
 ## 👨‍💼 Contributors
 
-- **Hamshika T.M** - Lead Developer
+-  Hamshika T.M -
+-  Manya Alva A
+-  Jayashree K
   - AI Notification Engine
   - Multi-Channel Integration
   - Behavior Tracking System
